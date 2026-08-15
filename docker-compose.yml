@@ -7,6 +7,14 @@ services:
     restart: unless-stopped
     ports:
       - "1883:1883"
+      - "8080:8080"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.tcp.routers.hivemq-mqtt.rule=HostSNI(`154.26.158.128.nip.io`)"
+      - "traefik.tcp.routers.hivemq-mqtt.entrypoints=mqtts"
+      - "traefik.tcp.routers.hivemq-mqtt.tls=true"
+      - "traefik.tcp.routers.hivemq-mqtt.tls.certresolver=letsencrypt"
+      - "traefik.tcp.services.hivemq-mqtt.loadbalancer.server.port=1883"
     environment:
       - HIVEMQ_LOG_LEVEL=INFO
     volumes:
