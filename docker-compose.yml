@@ -10,11 +10,18 @@ services:
       - "8080:8080"
     labels:
       - "traefik.enable=true"
+      # TCP Router (Native MQTT)
       - "traefik.tcp.routers.hivemq-mqtt.rule=HostSNI(`154.26.158.128.nip.io`)"
       - "traefik.tcp.routers.hivemq-mqtt.entrypoints=mqtts"
       - "traefik.tcp.routers.hivemq-mqtt.tls=true"
       - "traefik.tcp.routers.hivemq-mqtt.tls.certresolver=letsencrypt"
       - "traefik.tcp.services.hivemq-mqtt.loadbalancer.server.port=1883"
+      # HTTP Router (WebSockets)
+      - "traefik.http.routers.hivemq-ws.rule=Host(`ws.154.26.158.128.nip.io`)"
+      - "traefik.http.routers.hivemq-ws.entrypoints=websecure"
+      - "traefik.http.routers.hivemq-ws.tls=true"
+      - "traefik.http.routers.hivemq-ws.tls.certresolver=letsencrypt"
+      - "traefik.http.services.hivemq-ws.loadbalancer.server.port=8000"
     environment:
       - HIVEMQ_LOG_LEVEL=INFO
     volumes:
