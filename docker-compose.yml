@@ -5,6 +5,8 @@ services:
     image: hivemq/hivemq-ce:latest
     container_name: hivemq-ce
     restart: unless-stopped
+    networks:
+      - dokploy-network
     ports:
       - "1883:1883"
       - "8080:8080"
