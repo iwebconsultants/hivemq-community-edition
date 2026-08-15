@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  hivemq:
+    image: hivemq/hivemq-ce:latest
+    container_name: hivemq-ce
+    restart: unless-stopped
+    ports:
+      - "1883:1883"
+    environment:
+      - HIVEMQ_LOG_LEVEL=INFO
+    volumes:
+      - hivemq-data:/opt/hivemq/data
+      - hivemq-log:/opt/hivemq/log
+      # Mount the File Security Extension and its config
+      - ./extensions/hivemq-file-security-extension:/opt/hivemq/extensions/hivemq-file-security-extension
+
+volumes:
+  hivemq-data:
+  hivemq-log:
