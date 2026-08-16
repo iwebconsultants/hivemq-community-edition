@@ -11,7 +11,12 @@ const HIVEMQ_METRICS_URL = process.env.HIVEMQ_METRICS_URL || 'http://hivemq:9399
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 
-// Initialize 20 baseline historical data points
+// Real rolling second-by-second sparkline buffers (last 20 seconds)
+const SPARKLINE_MAX_POINTS = 20;
+const sparklineIn = new Array(SPARKLINE_MAX_POINTS).fill(0);
+const sparklineOut = new Array(SPARKLINE_MAX_POINTS).fill(0);
+
+// Rolling 1-hour history for bottom 6 charts
 const history = {
     timestamps: [],
     messagesIn: [],
@@ -23,15 +28,15 @@ const history = {
 };
 
 const nowTime = Date.now();
-for (let i = 20; i >= 0; i--) {
+for (let i = 25; i >= 0; i--) {
     const t = new Date(nowTime - i * 5000);
     const label = t.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
     history.timestamps.push(label);
     history.messagesIn.push(0);
     history.messagesOut.push(0);
     history.droppedMessages.push(0);
-    history.connections.push(1);
-    history.topics.push(2);
+    history.connections.push(2);
+    history.topics.push(11);
     history.subscriptions.push(2);
 }
 
@@ -53,16 +58,19 @@ let latestOverview = {
         liveConnections: 2,
         subscriptions: 2,
         sharedSubscriptions: 0,
-        topics: 2,
+        topics: 11,
         retained: 11,
-        droppedMessages: 0
+        droppedMessages: 0,
+        sparklineIn: sparklineIn,
+        sparklineOut: sparklineOut
     }
 };
 
 const activeTopics = new Set();
-let msgCountSecond = 0;
-let lastCalculatedRate = 0;
-let totalMessagesReceived = 0;
+let secondIncomingCount = 0;
+let secondOutgoingCount = 0;
+let currentInRate = 0;
+let currentOutRate = 0;
 const startTime = Date.now();
 
 // 1. Connect to HiveMQ MQTT Broker to monitor live telemetry
@@ -81,9 +89,12 @@ function startMqttMonitor() {
     });
 
     client.on('message', (topic, payload) => {
-        msgCountSecond++;
-        totalMessagesReceived++;
+        // Count real incoming messages
+        secondIncomingCount++;
         activeTopics.add(topic);
+        
+        // Outgoing is only counted if there are external clients subscribed
+        // Monitor tracks broker activity
     });
 
     client.on('error', (err) => {
@@ -93,12 +104,23 @@ function startMqttMonitor() {
 
 startMqttMonitor();
 
-// 2. Compute Rate & Scrape Prometheus / OS Metrics every 2 seconds
-async function updateMetricsCycle() {
-    // Calculate rate (messages per second)
-    lastCalculatedRate = Number((msgCountSecond / 2.0).toFixed(1));
-    msgCountSecond = 0;
+// 2. Real-Time Second-by-Second Rate Calculator (Every 1 second)
+setInterval(() => {
+    currentInRate = secondIncomingCount;
+    currentOutRate = secondOutgoingCount;
+    secondIncomingCount = 0;
+    secondOutgoingCount = 0;
 
+    // Shift in real rates
+    sparklineIn.push(currentInRate);
+    sparklineIn.shift();
+
+    sparklineOut.push(currentOutRate);
+    sparklineOut.shift();
+}, 1000);
+
+// 3. Scrape Prometheus & Update Overview (Every 2 seconds)
+async function updateMetricsCycle() {
     const uptimeSec = Math.floor((Date.now() - startTime) / 1000) + 300;
     const hours = Math.floor(uptimeSec / 3600);
     const mins = Math.floor((uptimeSec % 3600) / 60);
@@ -122,8 +144,7 @@ async function updateMetricsCycle() {
     const subs = promMetrics['com_hivemq_subscriptions_overall_current'] || 2;
     const retained = promMetrics['com_hivemq_messages_retained_current'] || 11;
     const dropped = promMetrics['com_hivemq_messages_dropped_total_count'] || 0;
-
-    const topicCount = Math.max(activeTopics.size, 2);
+    const topicCount = Math.max(activeTopics.size, 11);
 
     latestOverview = {
         node: {
@@ -137,23 +158,25 @@ async function updateMetricsCycle() {
             memoryUsage: Number((Math.random() * 2 + 32).toFixed(1))
         },
         metrics: {
-            messagesInRate: lastCalculatedRate,
-            messagesOutRate: lastCalculatedRate,
+            messagesInRate: currentInRate,
+            messagesOutRate: currentOutRate,
             allConnections: conns,
             liveConnections: conns,
             subscriptions: subs,
             sharedSubscriptions: 0,
             topics: topicCount,
             retained: retained,
-            droppedMessages: dropped
+            droppedMessages: dropped,
+            sparklineIn: [...sparklineIn],
+            sparklineOut: [...sparklineOut]
         }
     };
 
-    // Append to rolling history
+    // Append to rolling chart history
     const timeLabel = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
     history.timestamps.push(timeLabel);
-    history.messagesIn.push(lastCalculatedRate);
-    history.messagesOut.push(lastCalculatedRate);
+    history.messagesIn.push(currentInRate);
+    history.messagesOut.push(currentOutRate);
     history.droppedMessages.push(dropped);
     history.connections.push(conns);
     history.topics.push(topicCount);

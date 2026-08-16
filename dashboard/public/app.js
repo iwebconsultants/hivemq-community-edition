@@ -50,31 +50,34 @@ function initCharts() {
     chartSubs = createChart('chart-subscriptions', 'Subscriptions', '#06b6d4', 'rgba(6, 182, 212, 0.12)');
 }
 
-function renderSparklines(inVal, outVal) {
+function renderSparklines(sparkInArr, sparkOutArr) {
     const sparkIn = document.getElementById('spark-in');
     const sparkOut = document.getElementById('spark-out');
     
-    // Generate 26 bars spanning the full card width
-    const count = 26;
-    const baseIn = inVal > 0 ? inVal : 0;
-    const baseOut = outVal > 0 ? outVal : 0;
+    const inList = (sparkInArr && sparkInArr.length > 0) ? sparkInArr : new Array(20).fill(0);
+    const outList = (sparkOutArr && sparkOutArr.length > 0) ? sparkOutArr : new Array(20).fill(0);
 
-    sparkIn.innerHTML = Array.from({length: count}).map((_, i) => {
-        let h = 4;
-        if (baseIn > 0) {
-            const factor = 0.5 + Math.sin(i * 0.4) * 0.3 + (Math.random() * 0.3);
-            h = Math.max(6, Math.min(30, Math.round(baseIn * 2.5 * factor + 6)));
+    const maxIn = Math.max(...inList, 12);
+    const maxOut = Math.max(...outList, 12);
+
+    sparkIn.innerHTML = inList.map(val => {
+        let h = 2;
+        let opacity = '0.35';
+        if (val > 0) {
+            h = Math.max(8, Math.min(30, Math.round((val / maxIn) * 28 + 4)));
+            opacity = '1.0';
         }
-        return `<div class="spark-bar" style="height: ${h}px"></div>`;
+        return `<div class="spark-bar" style="height: ${h}px; opacity: ${opacity};" title="${val} msgs/sec"></div>`;
     }).join('');
 
-    sparkOut.innerHTML = Array.from({length: count}).map((_, i) => {
-        let h = 4;
-        if (baseOut > 0) {
-            const factor = 0.5 + Math.cos(i * 0.4) * 0.3 + (Math.random() * 0.3);
-            h = Math.max(6, Math.min(30, Math.round(baseOut * 2.5 * factor + 6)));
+    sparkOut.innerHTML = outList.map(val => {
+        let h = 2;
+        let opacity = '0.35';
+        if (val > 0) {
+            h = Math.max(8, Math.min(30, Math.round((val / maxOut) * 28 + 4)));
+            opacity = '1.0';
         }
-        return `<div class="spark-bar out" style="height: ${h}px"></div>`;
+        return `<div class="spark-bar out" style="height: ${h}px; opacity: ${opacity};" title="${val} msgs/sec"></div>`;
     }).join('');
 }
 
@@ -93,8 +96,8 @@ async function fetchOverview() {
         document.getElementById('kpi-topics').innerText = data.metrics.topics;
         document.getElementById('kpi-retained').innerText = data.metrics.retained;
 
-        // Render Sparklines
-        renderSparklines(data.metrics.messagesInRate, data.metrics.messagesOutRate);
+        // Render Real Sparklines based on rolling second arrays
+        renderSparklines(data.metrics.sparklineIn, data.metrics.sparklineOut);
 
         // Update Node Details
         document.getElementById('node-name').innerText = data.node.name;
@@ -141,7 +144,7 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchOverview();
     fetchHistory();
 
-    // Poll every 2 seconds
-    setInterval(fetchOverview, 2000);
+    // Poll every 1 second for live real-time feel
+    setInterval(fetchOverview, 1000);
     setInterval(fetchHistory, 2000);
 });
