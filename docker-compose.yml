@@ -31,6 +31,28 @@ services:
       - hivemq-log:/opt/hivemq/log
       # Mount the File Security Extension and its config
       - ./extensions/hivemq-file-security-extension:/opt/hivemq/extensions/hivemq-file-security-extension
+      # Mount the Prometheus Metrics Extension
+      - ./extensions/hivemq-prometheus-extension:/opt/hivemq/extensions/hivemq-prometheus-extension
+
+  dashboard:
+    build:
+      context: ./dashboard
+      dockerfile: Dockerfile
+    container_name: hivemq-dashboard
+    restart: unless-stopped
+    networks:
+      - dokploy-network
+    environment:
+      - HIVEMQ_METRICS_URL=http://hivemq:9399/metrics
+      - PORT=3000
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=dokploy-network"
+      - "traefik.http.routers.hivemq-dash.rule=Host(`hivemq-dash.altweb.site`) || Host(`hivemq-dash.154.26.158.128.nip.io`)"
+      - "traefik.http.routers.hivemq-dash.entrypoints=websecure"
+      - "traefik.http.routers.hivemq-dash.tls=true"
+      - "traefik.http.routers.hivemq-dash.tls.certresolver=letsencrypt"
+      - "traefik.http.services.hivemq-dash.loadbalancer.server.port=3000"
 
 volumes:
   hivemq-data:

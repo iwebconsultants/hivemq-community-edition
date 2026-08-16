@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HiveMQ Dashboard - Cluster Overview</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <div class="hivemq-hexagon-icon">
+                    <i class="fa-solid fa-cube"></i>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" title="Overview"><i class="fa-solid fa-gauge-high"></i></a>
+                <a href="#" class="nav-item" title="Connections"><i class="fa-solid fa-network-wired"></i></a>
+                <a href="#" class="nav-item" title="Subscriptions"><i class="fa-solid fa-layer-group"></i></a>
+                <a href="#" class="nav-item" title="Retained Messages"><i class="fa-solid fa-box-archive"></i></a>
+                <a href="#" class="nav-item" title="Schema Registry"><i class="fa-solid fa-code"></i></a>
+                <a href="#" class="nav-item" title="Data Integration"><i class="fa-solid fa-shuffle"></i></a>
+                <a href="#" class="nav-item" title="Rules Engine"><i class="fa-solid fa-bolt"></i></a>
+                <a href="#" class="nav-item" title="Settings"><i class="fa-solid fa-gear"></i></a>
+            </nav>
+            <div class="sidebar-footer">
+                <a href="#" class="nav-item" title="Docs"><i class="fa-regular fa-circle-question"></i></a>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Top Navbar -->
+            <header class="top-nav">
+                <div class="top-nav-left">
+                    <h1 class="page-heading">Cluster Overview</h1>
+                    <div class="tab-links">
+                        <button class="tab-link active">Cluster Overview</button>
+                        <button class="tab-link">Nodes</button>
+                        <button class="tab-link">Metrics</button>
+                    </div>
+                </div>
+                <div class="top-nav-right">
+                    <div class="search-box">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" placeholder="Quick Find" disabled>
+                        <span class="kbd-shortcut">⌘ K</span>
+                    </div>
+                    <button class="btn-upgrade"><i class="fa-solid fa-sparkles"></i> HiveMQ CE</button>
+                    <button class="icon-btn"><i class="fa-solid fa-circle-info"></i></button>
+                    <div class="user-badge">
+                        <img src="https://ui-avatars.com/api/?name=Admin&background=00C48C&color=fff&rounded=true&bold=true" alt="Admin">
+                        <span class="user-name">admin</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Dashboard Content Grid -->
+            <div class="dashboard-body">
+                <!-- Top 4 EMQX-style KPI Cards -->
+                <div class="kpi-row">
+                    <!-- 1. Messages In/Out Rate -->
+                    <div class="kpi-card card-rates">
+                        <div class="rate-half">
+                            <div class="rate-label">Messages In Rate</div>
+                            <div class="rate-val" id="kpi-messages-in-rate">0 <span class="rate-unit">messages/sec</span></div>
+                            <div class="sparkline-bar-wrap" id="spark-in"></div>
+                        </div>
+                        <div class="rate-half" style="border-top: 1px solid #f1f5f9; padding-top: 12px; margin-top: 12px;">
+                            <div class="rate-label">Messages Out Rate</div>
+                            <div class="rate-val" id="kpi-messages-out-rate">0 <span class="rate-unit">messages/sec</span></div>
+                            <div class="sparkline-bar-wrap" id="spark-out"></div>
+                        </div>
+                    </div>
+
+                    <!-- 2. Connections -->
+                    <div class="kpi-card">
+                        <div class="stat-group">
+                            <div class="stat-sub-label"><i class="fa-solid fa-square-check text-success"></i> All Connections</div>
+                            <div class="stat-number" id="kpi-all-connections">0</div>
+                        </div>
+                        <div class="stat-group" style="margin-top: 18px;">
+                            <div class="stat-sub-label"><i class="fa-solid fa-circle-dot text-success"></i> Live Connections</div>
+                            <div class="stat-number" id="kpi-live-connections">0</div>
+                        </div>
+                    </div>
+
+                    <!-- 3. Subscriptions -->
+                    <div class="kpi-card">
+                        <div class="stat-group">
+                            <div class="stat-sub-label"><i class="fa-solid fa-hashtag text-primary"></i> Subscriptions</div>
+                            <div class="stat-number" id="kpi-subscriptions">0</div>
+                        </div>
+                        <div class="stat-group" style="margin-top: 18px;">
+                            <div class="stat-sub-label"><i class="fa-solid fa-share-nodes text-primary"></i> Shared Subscriptions</div>
+                            <div class="stat-number" id="kpi-shared-subscriptions">0</div>
+                        </div>
+                    </div>
+
+                    <!-- 4. Topics & Retained -->
+                    <div class="kpi-card">
+                        <div class="stat-group">
+                            <div class="stat-sub-label"><i class="fa-solid fa-sitemap text-warning"></i> Topics</div>
+                            <div class="stat-number" id="kpi-topics">0</div>
+                        </div>
+                        <div class="stat-group" style="margin-top: 18px;">
+                            <div class="stat-sub-label"><i class="fa-solid fa-box text-warning"></i> Retained</div>
+                            <div class="stat-number" id="kpi-retained">0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Middle: Node Information Card -->
+                <div class="node-info-card">
+                    <div class="node-badge-pill">
+                        <span class="dot-live"></span> 1 Node
+                    </div>
+                    <div class="node-details-grid">
+                        <div class="node-visual">
+                            <div class="hexagon-cube">
+                                <i class="fa-solid fa-cube"></i>
+                            </div>
+                        </div>
+                        <div class="node-col">
+                            <div class="node-field-title">Node Information</div>
+                            <div class="node-field-row">
+                                <span class="field-label">Node Name:</span>
+                                <span class="field-val highlight" id="node-name">hivemq@plant01.altweb.site</span>
+                            </div>
+                            <div class="node-field-row">
+                                <span class="field-label">Uptime:</span>
+                                <span class="field-val" id="node-uptime">0 hours 0 minutes</span>
+                            </div>
+                            <div class="node-field-row">
+                                <span class="field-label">Connections:</span>
+                                <span class="field-val" id="node-conn">0</span>
+                            </div>
+                            <div class="node-field-row">
+                                <span class="field-label">Subscriptions:</span>
+                                <span class="field-val" id="node-subs">0</span>
+                            </div>
+                            <div class="node-field-row">
+                                <span class="field-label">Topics:</span>
+                                <span class="field-val" id="node-topics">0</span>
+                            </div>
+                        </div>
+                        <div class="node-col">
+                            <div class="node-field-row" style="margin-top: 24px;">
+                                <span class="field-label">Node Role:</span>
+                                <span class="field-val">core</span>
+                            </div>
+                            <div class="node-field-row">
+                                <span class="field-label">Version:</span>
+                                <span class="field-val" id="node-version">HiveMQ CE 2024.9</span>
+                            </div>
+                            <div class="node-field-row">
+                                <span class="field-label">File Descriptors Limit:</span>
+                                <span class="field-val">1048576</span>
+                            </div>
+                            <div class="node-field-row">
+                                <span class="field-label">OS CPU Load:</span>
+                                <span class="field-val" id="node-cpu">0.12 / 0.18</span>
+                            </div>
+                            <div class="node-field-row align-center">
+                                <span class="field-label">OS Memory:</span>
+                                <div class="memory-progress-track">
+                                    <div class="memory-progress-fill" id="node-memory-bar" style="width: 32%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bottom: 6 Trend Chart Panels (Last hour) -->
+                <div class="charts-header">
+                    <div class="time-selector">
+                        <select id="time-range-select">
+                            <option value="1h">Last hour</option>
+                            <option value="6h">Last 6 hours</option>
+                            <option value="24h">Last 24 hours</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="charts-grid">
+                    <!-- Chart 1: Messages In -->
+                    <div class="chart-card">
+                        <div class="chart-card-header">
+                            <span class="chart-title">Messages In</span>
+                            <i class="fa-solid fa-arrow-down text-muted"></i>
+                        </div>
+                        <div class="canvas-wrap">
+                            <canvas id="chart-messages-in"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Chart 2: Messages Out -->
+                    <div class="chart-card">
+                        <div class="chart-card-header">
+                            <span class="chart-title">Messages Out</span>
+                            <i class="fa-solid fa-arrow-up text-muted"></i>
+                        </div>
+                        <div class="canvas-wrap">
+                            <canvas id="chart-messages-out"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Chart 3: Dropped Messages -->
+                    <div class="chart-card">
+                        <div class="chart-card-header">
+                            <span class="chart-title">Dropped Messages</span>
+                            <i class="fa-solid fa-triangle-exclamation text-muted"></i>
+                        </div>
+                        <div class="canvas-wrap">
+                            <canvas id="chart-dropped"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Chart 4: Connections -->
+                    <div class="chart-card">
+                        <div class="chart-card-header">
+                            <span class="chart-title">Connections</span>
+                            <i class="fa-solid fa-network-wired text-muted"></i>
+                        </div>
+                        <div class="canvas-wrap">
+                            <canvas id="chart-connections"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Chart 5: Topics -->
+                    <div class="chart-card">
+                        <div class="chart-card-header">
+                            <span class="chart-title">Topics</span>
+                            <i class="fa-solid fa-sitemap text-muted"></i>
+                        </div>
+                        <div class="canvas-wrap">
+                            <canvas id="chart-topics"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Chart 6: Subscriptions -->
+                    <div class="chart-card">
+                        <div class="chart-card-header">
+                            <span class="chart-title">Subscriptions</span>
+                            <i class="fa-solid fa-layer-group text-muted"></i>
+                        </div>
+                        <div class="canvas-wrap">
+                            <canvas id="chart-subscriptions"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
