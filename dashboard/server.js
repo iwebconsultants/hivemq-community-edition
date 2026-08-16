@@ -205,6 +205,15 @@ app.get('/api/history', (req, res) => {
     res.json(history);
 });
 
+// Serve Knowledge Base Dossier for NotebookLM & Web Sharing
+app.get('/dossier.md', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'Water_Treatment_UNS_Industrial_Architecture_Dossier.md'));
+});
+
+app.get('/dossier', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'Water_Treatment_UNS_Industrial_Architecture_Dossier.md'));
+});
+
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`HiveMQ Dashboard listening on port ${PORT}`);
 });
