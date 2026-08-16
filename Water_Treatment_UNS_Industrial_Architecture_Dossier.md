@@ -7,6 +7,30 @@
 
 ---
 
+## 🔑 System Access, Credentials & Endpoints Directory
+
+Below is the centralized operational directory for all deployed components, web consoles, broker ports, and administrative credentials:
+
+| Service / Component | Live Web URL / Endpoint | Protocol & Port | Username | Password | Purpose & Capabilities |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Plant SCADA HMI** | [https://nodered.altweb.site/ui/](https://nodered.altweb.site/ui/) | HTTPS (443) | `admin` | `SecureMqtt2026!` | Full-width single-page plant operator interface to control simulation, setpoints, and view process topology. |
+| **Node-RED Editor** | [https://nodered.altweb.site/](https://nodered.altweb.site/) | HTTPS (443) | `admin` | `SecureMqtt2026!` | Flow programming environment running the 1s PLC deterministic physics engine. |
+| **HiveMQ Performance Dashboard** | [https://hivemq-dash.altweb.site](https://hivemq-dash.altweb.site) | HTTPS (443) | - | - | Custom real-time HiveMQ broker overview matching EMQX layout (live rate sparklines, active connections, topics, and 6 time-series graphs). |
+| **EMQX Performance Dashboard** | [https://emqx-dash.altweb.site](https://emqx-dash.altweb.site) | HTTPS (443) | `admin` | `SecureMqtt2026!` | Native EMQX cluster overview, active client list, rule engine, and metrics. |
+| **HiveMQ MQTT Broker (TLS)** | `hivemq.altweb.site` | **MQTTS (8883)** | `admin` | `SecureMqtt2026!` | Encrypted native MQTT broker with Let's Encrypt TLS certificate via Traefik SNI. |
+| **HiveMQ MQTT Broker (Plain)**| `hivemq.altweb.site` | **MQTT (1883)** | `admin` | `SecureMqtt2026!` | Plaintext MQTT broker port for edge device compatibility. |
+| **HiveMQ WebSockets (WSS)** | `hivemq-ws.altweb.site` | **WSS (443)** | `admin` | `SecureMqtt2026!` | Secure WebSockets endpoint for browser-based MQTT clients (path `/mqtt`). |
+| **EMQX MQTT Broker (TLS)** | `emqx.altweb.site` | **MQTTS (8883)** | `admin` | `SecureMqtt2026!` | Encrypted native MQTT broker with Let's Encrypt TLS certificate via Traefik SNI. |
+| **EMQX MQTT Broker (Plain)** | `emqx.altweb.site` | **MQTT (1883)** | `admin` | `SecureMqtt2026!` | Plaintext MQTT broker port for edge device compatibility. |
+| **MQTTX Web Client** | [https://mqttx.altweb.site](https://mqttx.altweb.site) | HTTPS (443) | - | - | Web-based diagnostic MQTT client to test live topic publishing and subscribing. |
+| **Dokploy Server Management**| [https://server.iwebx.com.au](https://server.iwebx.com.au) | HTTPS (443) | `admin` | *(Dokploy Master)* | Dokploy container orchestrator, Traefik routing, compose builds, and SSL manager. |
+| **Server Public IP** | `154.26.158.128` | SSH (22) | `root` | *(SSH Key)* | Production host server in Sydney datacenter. |
+| **Google NotebookLM** | [Open Notebook](https://notebook.google.com/notebook/359cce18-6d17-4911-9400-53d03a982085?utm_source=gemini_notebook&utm_medium=referral&pli=1) | Cloud SaaS | - | - | Centralized knowledge base for research, citations, audio generation, and team sharing. |
+| **Live Dossier Web Endpoint**| `https://hivemq-dash.altweb.site/dossier.md` | HTTPS (443) | - | - | Public URL for direct NotebookLM web ingestion. |
+| **GitHub GitOps Repo** | [iwebconsultants/hivemq-community-edition](https://github.com/iwebconsultants/hivemq-community-edition) | Git / HTTPS | - | - | Source control repository containing compose configurations, dashboard code, and extensions. |
+
+---
+
 ## Table of Contents
 1. [Executive Summary & Problem Statement](#1-executive-summary--problem-statement)
 2. [Unified Namespace (UNS) & ISA-95 Framework](#2-unified-namespace-uns--isa-95-framework)
