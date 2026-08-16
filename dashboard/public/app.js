@@ -54,15 +54,26 @@ function renderSparklines(inVal, outVal) {
     const sparkIn = document.getElementById('spark-in');
     const sparkOut = document.getElementById('spark-out');
     
-    // Generate mini visual bars
-    const count = 12;
-    sparkIn.innerHTML = Array.from({length: count}).map(() => {
-        const h = Math.max(4, Math.min(18, Math.round(Math.random() * (inVal > 0 ? 16 : 4) + (inVal > 0 ? 4 : 2))));
+    // Generate 26 bars spanning the full card width
+    const count = 26;
+    const baseIn = inVal > 0 ? inVal : 0;
+    const baseOut = outVal > 0 ? outVal : 0;
+
+    sparkIn.innerHTML = Array.from({length: count}).map((_, i) => {
+        let h = 4;
+        if (baseIn > 0) {
+            const factor = 0.5 + Math.sin(i * 0.4) * 0.3 + (Math.random() * 0.3);
+            h = Math.max(6, Math.min(30, Math.round(baseIn * 2.5 * factor + 6)));
+        }
         return `<div class="spark-bar" style="height: ${h}px"></div>`;
     }).join('');
 
-    sparkOut.innerHTML = Array.from({length: count}).map(() => {
-        const h = Math.max(4, Math.min(18, Math.round(Math.random() * (outVal > 0 ? 16 : 4) + (outVal > 0 ? 4 : 2))));
+    sparkOut.innerHTML = Array.from({length: count}).map((_, i) => {
+        let h = 4;
+        if (baseOut > 0) {
+            const factor = 0.5 + Math.cos(i * 0.4) * 0.3 + (Math.random() * 0.3);
+            h = Math.max(6, Math.min(30, Math.round(baseOut * 2.5 * factor + 6)));
+        }
         return `<div class="spark-bar out" style="height: ${h}px"></div>`;
     }).join('');
 }

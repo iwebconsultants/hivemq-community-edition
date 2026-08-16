@@ -282,20 +282,27 @@ body {
 .sparkline-bar-wrap {
     display: flex;
     align-items: flex-end;
-    gap: 3px;
-    height: 18px;
-    margin-top: 6px;
+    gap: 4px;
+    height: 32px;
+    width: 100%;
+    margin-top: 8px;
+    padding: 2px 0;
 }
 
 .spark-bar {
-    width: 6px;
+    flex: 1;
+    min-width: 4px;
     background: #3b82f6;
-    border-radius: 2px;
-    transition: height 0.3s;
+    border-radius: 3px;
+    transition: height 0.3s ease, background-color 0.3s ease;
 }
 
 .spark-bar.out {
     background: #6366f1;
+}
+
+.spark-bar:hover {
+    filter: brightness(1.15);
 }
 
 .stat-sub-label {
